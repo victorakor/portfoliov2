@@ -166,8 +166,8 @@ You need to create the first admin account manually. Run this in the Railway Pos
 INSERT INTO users (id, email, password_hash, role, created_at, updated_at)
 VALUES (
   uuid_generate_v4(),
-  'your@email.com',
-  '$2a$10$PASTE_YOUR_BCRYPT_HASH_HERE',
+  'victorakor04@gmail.com',
+  '$2y$10$BSlMuato1ITok0puPurr0OeM8FvWGYtHOe5dl5.DGNP3WvQ7i/6uO',
   'admin',
   NOW(),
   NOW()

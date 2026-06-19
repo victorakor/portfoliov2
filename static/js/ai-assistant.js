@@ -19,64 +19,7 @@ const PORTFOLIO_CONTEXT = {
   availability: 'Available for new projects',
 };
 
-const RESPONSES = [
-  {
-    patterns: ['surveillance', 'cctv', 'security camera', 'monitoring'],
-    answer: `Yes! Victor built a complete Mall Surveillance System using Python, OpenCV, and TensorFlow. It includes real-time object detection, face recognition, and anomaly detection. This is one of his flagship AI/Computer Vision projects.`,
-  },
-  {
-    patterns: ['face recognition', 'facial', 'face detection'],
-    answer: `Absolutely. Victor has built a production-grade AI Face Recognition System using deep learning and Python. It handles dataset preparation, model training, and real-time deployment.`,
-  },
-  {
-    patterns: ['saas', 'web app', 'web application', 'platform', 'dashboard'],
-    answer: `Yes! Victor specializes in building SaaS platforms and business web applications using Go for the backend and modern JavaScript for the frontend. He's built platforms like Hackerthon and Gwinks Hub.`,
-  },
-  {
-    patterns: ['go', 'golang', 'experience with go'],
-    answer: `Victor has 3+ years of Go development experience. He uses Go for building high-performance REST APIs, microservices, CLI tools, and backend systems. Go is his primary backend language.`,
-  },
-  {
-    patterns: ['api', 'backend', 'rest', 'microservice'],
-    answer: `Backend engineering is Victor's core strength. He designs and builds REST APIs, microservices, authentication systems, and database architectures using Go and PostgreSQL.`,
-  },
-  {
-    patterns: ['ai', 'machine learning', 'deep learning', 'neural network', 'ml'],
-    answer: `Victor is an AI Engineer with hands-on experience in computer vision, deep learning, NLP, and object detection. He's built multiple AI systems including face recognition, eye disease detection, and surveillance systems.`,
-  },
-  {
-    patterns: ['computer vision', 'opencv', 'image', 'object detection'],
-    answer: `Computer Vision is one of Victor's specializations. He's built systems using OpenCV and TensorFlow for real-time object detection, face recognition, and medical image analysis.`,
-  },
-  {
-    patterns: ['cost', 'price', 'budget', 'how much', 'rate'],
-    answer: `Victor's project rates vary based on scope and complexity. Use the contact form to describe your project and get a custom quote. Budgets typically range from $500 for small tools to $10,000+ for complex AI systems.`,
-  },
-  {
-    patterns: ['hire', 'work with', 'available', 'freelance', 'consultant'],
-    answer: `Victor is currently available for new projects! He works as a freelance engineer and consultant. Click "Book Consultation" to start a conversation about your project.`,
-  },
-  {
-    patterns: ['timeline', 'how long', 'delivery', 'deadline'],
-    answer: `Project timelines depend on complexity. Simple APIs: 1-2 weeks. Full web apps: 4-8 weeks. AI systems: 6-12 weeks. Victor provides detailed timelines during the consultation phase.`,
-  },
-  {
-    patterns: ['technology', 'tech stack', 'what do you use', 'languages'],
-    answer: `Victor's core stack: Go (backend), Python (AI/ML), JavaScript (frontend), PostgreSQL (database), Docker (deployment), OpenCV & TensorFlow (computer vision). He's proficient in 12+ technologies.`,
-  },
-  {
-    patterns: ['contact', 'reach', 'email', 'message'],
-    answer: `You can reach Victor through the contact form on this site. Click "Book Consultation" for a structured project inquiry, or scroll to the contact section.`,
-  },
-];
-
-function getResponse(input) {
-  const lower = input.toLowerCase();
-  for (const r of RESPONSES) {
-    if (r.patterns.some(p => lower.includes(p))) return r.answer;
-  }
-  return `Great question! Victor is a Senior Software Engineer specializing in AI, backend engineering, and full-stack development. He's built ${PORTFOLIO_CONTEXT.projects.length} major projects across AI, computer vision, and web platforms. Could you be more specific about what you're looking for? I can tell you about his projects, services, technologies, or availability.`;
-}
+const RESPONSES_FALLBACK = `Sorry, I'm having trouble connecting right now. You can still reach Victor directly through the contact form.`;
 
 function createAssistant() {
   const widget = document.createElement('div');
@@ -156,6 +99,8 @@ function createAssistant() {
   const suggestions = document.getElementById('aiSuggestions');
 
   let msgCount = 0;
+  let chatHistory = []; // { role: 'user'|'assistant', content: string }
+  let sending = false;
 
   function addMessage(text, type) {
     const div = document.createElement('div');
@@ -188,16 +133,41 @@ function createAssistant() {
     document.getElementById('typingIndicator')?.remove();
   }
 
+  async function fetchAssistantReply(text) {
+    const res = await fetch('/api/assistant/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, history: chatHistory }),
+    });
+    if (!res.ok) throw new Error(`Assistant request failed: ${res.status}`);
+    const data = await res.json();
+    return data.reply;
+  }
+
   function handleSend(text) {
     text = text.trim();
-    if (!text) return;
+    if (!text || sending) return;
+    sending = true;
+    send.disabled = true;
     addMessage(text, 'user');
+    chatHistory.push({ role: 'user', content: text });
     input.value = '';
     showTyping();
-    setTimeout(() => {
-      hideTyping();
-      addMessage(getResponse(text), 'bot');
-    }, 800 + Math.random() * 400);
+
+    fetchAssistantReply(text)
+      .then(reply => {
+        hideTyping();
+        addMessage(reply, 'bot');
+        chatHistory.push({ role: 'assistant', content: reply });
+      })
+      .catch(() => {
+        hideTyping();
+        addMessage(RESPONSES_FALLBACK, 'bot');
+      })
+      .finally(() => {
+        sending = false;
+        send.disabled = false;
+      });
   }
 
   toggle.addEventListener('click', () => {

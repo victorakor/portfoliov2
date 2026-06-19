@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"portfolio/internal/analytics"
+	"portfolio/internal/assistant"
 	"portfolio/internal/auth"
 	"portfolio/internal/blog"
 	"portfolio/internal/dashboard"
@@ -49,6 +50,7 @@ func main() {
 	mux.HandleFunc("/api/blog/", blog.GetBySlugHandler)
 	mux.HandleFunc("/api/projects", projects.ListHandler)
 	mux.HandleFunc("/api/track", analytics.TrackHandler)
+	mux.HandleFunc("/api/assistant/chat", assistant.ChatHandler)
 
 	// Admin auth
 	mux.HandleFunc("/admin/login", auth.LoginHandler)
@@ -76,6 +78,7 @@ func main() {
 	adminMux.HandleFunc("/api/admin/projects/", projects.UpdateHandler)
 	adminMux.HandleFunc("/api/admin/analytics/pages", analytics.PageStatsHandler)
 
+	mux.Handle("/admin", middleware.Auth(adminMux))
 	mux.Handle("/admin/", middleware.Auth(adminMux))
 	mux.Handle("/api/admin/", middleware.Auth(adminMux))
 
