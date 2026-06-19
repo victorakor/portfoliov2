@@ -1,6 +1,6 @@
 .env
 *.exe
-server
+/server
 /tmp
 *.log
 .DS_Store
