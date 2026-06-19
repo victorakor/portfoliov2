@@ -12,13 +12,13 @@ import (
 	"time"
 )
 
-const grokAPIURL = "https://api.x.ai/v1/chat/completions"
+const grokAPIURL = "https://api.groq.com/openai/v1/chat/completions"
 
 // grokModel is the current general-purpose Grok model. The older "fast"
 // family (grok-4-1-fast, grok-4-fast) was retired by xAI on May 15, 2026 and
 // now redirects to grok-4.20 — xAI's current guidance is to default to
 // grok-4.3 for general use. Override with the GROK_MODEL env var if needed.
-const grokModel = "grok-4.3"
+const grokModel = "llama-3.1-8b-instant"
 
 const systemPrompt = `You are the AI assistant embedded on Victor Akor's portfolio website.
 Victor is a Senior Software Engineer & AI Specialist with 5+ years of experience.
