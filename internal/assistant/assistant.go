@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -74,6 +75,13 @@ type ChatResponse struct {
 }
 
 var httpClient = &http.Client{Timeout: 20 * time.Second}
+
+func truncate(s string, n int) string {
+	if len(s) <= n {
+		return s
+	}
+	return s[:n] + "...(truncated)"
+}
 
 // ChatHandler proxies portfolio-assistant chat turns to the Grok API so the
 // API key never reaches the browser.
@@ -158,18 +166,16 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var grokResp grokResponse
-	if err := json.Unmarshal(body, &grokResp); err != nil {
-		http.Error(w, "Failed to parse assistant response", http.StatusBadGateway)
+	log.Printf("[assistant] grok status=%d body=%s", resp.StatusCode, truncate(string(body), 1000))
+
+	if resp.StatusCode != http.StatusOK {
+		http.Error(w, fmt.Sprintf("Assistant error: upstream returned status %d", resp.StatusCode), http.StatusBadGateway)
 		return
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		msg := "Assistant request failed"
-		if grokResp.Error != nil && grokResp.Error.Message != "" {
-			msg = grokResp.Error.Message
-		}
-		http.Error(w, fmt.Sprintf("Assistant error: %s", msg), http.StatusBadGateway)
+	var grokResp grokResponse
+	if err := json.Unmarshal(body, &grokResp); err != nil {
+		http.Error(w, "Failed to parse assistant response", http.StatusBadGateway)
 		return
 	}
 
