@@ -14,10 +14,11 @@ import (
 
 const grokAPIURL = "https://api.x.ai/v1/chat/completions"
 
-// grokModel is the cheapest current Grok tier — plenty capable for an FAQ-style
-// portfolio assistant. Override with the GROK_MODEL env var if you want to
-// point at a different SKU (e.g. "grok-4.3") without a code change.
-const grokModel = "grok-4.1-fast"
+// grokModel is the current general-purpose Grok model. The older "fast"
+// family (grok-4-1-fast, grok-4-fast) was retired by xAI on May 15, 2026 and
+// now redirects to grok-4.20 — xAI's current guidance is to default to
+// grok-4.3 for general use. Override with the GROK_MODEL env var if needed.
+const grokModel = "grok-4.3"
 
 const systemPrompt = `You are the AI assistant embedded on Victor Akor's portfolio website.
 Victor is a Senior Software Engineer & AI Specialist with 5+ years of experience.
