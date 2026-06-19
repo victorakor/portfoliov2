@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Victor Akor Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+  <link rel="stylesheet" href="/static/css/admin.css" />
+  <meta name="robots" content="noindex,nofollow" />
+</head>
+<body>
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" role="navigation" aria-label="Admin navigation">
+    <div class="sidebar-logo">
+      <a href="/admin">Victor<span>.</span> Admin</a>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">Overview</div>
+      <a href="/admin" class="sidebar-link active"><span class="icon">📊</span> Dashboard</a>
+      <div class="sidebar-section">CRM</div>
+      <a href="/admin/leads" class="sidebar-link"><span class="icon">👥</span> Leads <span class="badge-count" id="newLeadCount">0</span></a>
+      <a href="/admin/email" class="sidebar-link"><span class="icon">✉️</span> Email Center</a>
+      <div class="sidebar-section">Content</div>
+      <a href="/admin/blog" class="sidebar-link"><span class="icon">📝</span> Blog Posts</a>
+      <a href="/admin/projects" class="sidebar-link"><span class="icon">🗂️</span> Projects</a>
+      <div class="sidebar-section">Insights</div>
+      <a href="/admin/analytics" class="sidebar-link"><span class="icon">📈</span> Analytics</a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="/admin/logout" class="sidebar-link"><span class="icon">🚪</span> Logout</a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1 class="admin-topbar-title">Dashboard</h1>
+      <div class="admin-topbar-actions">
+        <a href="/" target="_blank" class="btn btn-secondary btn-sm">View Site ↗</a>
+      </div>
+    </div>
+    <div class="admin-content">
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-label">Total Leads</div>
+          <div class="stat-value" id="stat_total_leads">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🆕</div>
+          <div class="stat-label">New Leads</div>
+          <div class="stat-value" id="stat_new_leads">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📞</div>
+          <div class="stat-label">Contacted</div>
+          <div class="stat-value" id="stat_contacted">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🤝</div>
+          <div class="stat-label">Negotiation</div>
+          <div class="stat-value" id="stat_negotiation">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-label">Won</div>
+          <div class="stat-value" id="stat_won">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">👁️</div>
+          <div class="stat-label">Total Visitors</div>
+          <div class="stat-value" id="stat_total_visitors">—</div>
+        </div>
+      </div>
+
+      <!-- Recent Leads -->
+      <div class="table-wrapper">
+        <div class="table-header">
+          <h2 class="table-title">Recent Leads</h2>
+          <a href="/admin/leads" class="btn btn-secondary btn-sm">View All</a>
+        </div>
+        <table class="data-table" aria-label="Recent leads">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Project Type</th>
+              <th>Budget</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="leadsTableBody">
+            <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:40px">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title id="pageTitle">Blog — Victor Akor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+  <link rel="stylesheet" href="/static/css/animations.css" />
+  <style>
+    .post-content { max-width: 720px; margin: 0 auto; }
+    .post-content h2 { color: var(--text); margin: 40px 0 16px; }
+    .post-content h3 { color: var(--text); margin: 32px 0 12px; }
+    .post-content p { margin-bottom: 20px; }
+    .post-content pre { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; overflow-x: auto; margin: 24px 0; }
+    .post-content code { font-family: var(--font-mono); font-size: 0.875rem; color: var(--secondary); }
+    .post-content pre code { color: var(--text); }
+    .post-content ul, .post-content ol { padding-left: 24px; margin-bottom: 20px; }
+    .post-content li { color: var(--muted); margin-bottom: 8px; line-height: 1.7; }
+    .post-content blockquote { border-left: 3px solid var(--primary); padding-left: 20px; margin: 24px 0; }
+    .post-content blockquote p { color: var(--text); font-style: italic; }
+  </style>
+</head>
+<body>
+<nav class="navbar scrolled">
+  <div class="container navbar-inner">
+    <a href="/" class="navbar-logo">Victor<span>.</span></a>
+    <div class="navbar-cta">
+      <a href="/blog" class="btn btn-secondary btn-sm">← All Posts</a>
+      <a href="/contact" class="btn btn-primary btn-sm">Work With Me</a>
+    </div>
+  </div>
+</nav>
+
+<article style="padding-top:100px">
+  <div id="postContent" style="padding:60px 24px">
+    <div class="container" style="max-width:720px;text-align:center;padding:80px 0">
+      <div style="font-size:2rem;margin-bottom:16px">⏳</div>
+      <p>Loading article...</p>
+    </div>
+  </div>
+</article>
+
+<script src="/static/js/main.js"></script>
+<script src="/static/js/ai-assistant.js"></script>
+<script>
+(async function() {
+  const slug = location.pathname.split('/').pop();
+  try {
+    const res = await fetch(`/api/blog/${slug}`);
+    if (!res.ok) throw new Error('Not found');
+    const post = await res.json();
+    document.getElementById('pageTitle').textContent = `${post.title} — Victor Akor`;
+    document.getElementById('postContent').innerHTML = `
+      <div style="background:linear-gradient(135deg,rgba(37,99,235,0.06),transparent);border-bottom:1px solid var(--border);padding:60px 24px;margin-bottom:60px">
+        <div class="container" style="max-width:720px">
+          <div class="blog-card-category" style="margin-bottom:12px">${post.category || 'Engineering'}</div>
+          <h1 style="font-size:clamp(1.8rem,4vw,3rem);margin-bottom:16px">${post.title}</h1>
+          <p style="font-size:1.1rem;margin-bottom:24px">${post.excerpt || ''}</p>
+          <div style="font-size:0.8rem;color:var(--muted)">${new Date(post.created_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div>
+        </div>
+      </div>
+      <div class="container post-content">${post.content || '<p>Content coming soon.</p>'}</div>
+      <div class="container" style="max-width:720px;margin-top:80px;padding-top:40px;border-top:1px solid var(--border)">
+        <div class="card" style="text-align:center">
+          <h3 style="color:var(--text);margin-bottom:8px">Enjoyed this article?</h3>
+          <p style="margin-bottom:24px">Let's work together on your next project.</p>
+          <a href="/contact" class="btn btn-primary">Book a Consultation →</a>
+        </div>
+      </div>
+    `;
+  } catch {
+    document.getElementById('postContent').innerHTML = `
+      <div class="container" style="max-width:720px;text-align:center;padding:80px 0">
+        <div style="font-size:3rem;margin-bottom:16px">📭</div>
+        <h2 style="color:var(--text);margin-bottom:8px">Article Not Found</h2>
+        <p style="margin-bottom:24px">This article doesn't exist or hasn't been published yet.</p>
+        <a href="/blog" class="btn btn-secondary">← Back to Blog</a>
+      </div>
+    `;
+  }
+})();
+</script>
+</body>
+</html>

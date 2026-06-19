@@ -1,0 +1,79 @@
+/* Victor Akor Portfolio v3 — Animations */
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.2)} }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+@keyframes slideInLeft { from{opacity:0;transform:translateX(-32px)} to{opacity:1;transform:translateX(0)} }
+@keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-8px)} }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+@keyframes countUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes orb { 0%{transform:translate(0,0) scale(1)} 33%{transform:translate(30px,-20px) scale(1.05)} 66%{transform:translate(-20px,15px) scale(0.95)} 100%{transform:translate(0,0) scale(1)} }
+@keyframes gridPulse { 0%,100%{opacity:0.03} 50%{opacity:0.07} }
+@keyframes neuralLine { 0%{stroke-dashoffset:1000;opacity:0} 20%{opacity:0.6} 80%{opacity:0.6} 100%{stroke-dashoffset:0;opacity:0} }
+@keyframes particleFloat { 0%{transform:translateY(0) translateX(0);opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{transform:translateY(-100vh) translateX(var(--drift));opacity:0} }
+@keyframes typewriter { from{width:0} to{width:100%} }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+@keyframes progressFill { from{width:0} to{width:var(--target)} }
+@keyframes ripple { 0%{transform:scale(0);opacity:0.6} 100%{transform:scale(4);opacity:0} }
+@keyframes glow { 0%,100%{box-shadow:0 0 20px rgba(37,99,235,0.2)} 50%{box-shadow:0 0 40px rgba(37,99,235,0.5)} }
+
+.animate-fade-in { animation: fadeIn 0.6s ease forwards; }
+.animate-fade-in-up { animation: fadeInUp 0.6s ease forwards; }
+.animate-slide-left { animation: slideInLeft 0.6s ease forwards; }
+.animate-float { animation: float 4s ease-in-out infinite; }
+.animate-glow { animation: glow 3s ease-in-out infinite; }
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+.delay-600 { animation-delay: 0.6s; }
+
+[data-reveal] { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+[data-reveal].revealed { opacity: 1; transform: translateY(0); }
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  animation: orb 12s ease-in-out infinite;
+}
+.orb-1 { width: 400px; height: 400px; background: rgba(37,99,235,0.12); top: 10%; right: 5%; animation-delay: 0s; }
+.orb-2 { width: 300px; height: 300px; background: rgba(6,182,212,0.08); bottom: 20%; left: 10%; animation-delay: -4s; }
+.orb-3 { width: 200px; height: 200px; background: rgba(37,99,235,0.06); top: 50%; left: 40%; animation-delay: -8s; }
+
+.grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridPulse 6s ease-in-out infinite;
+}
+
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: var(--primary);
+  border-radius: 50%;
+  animation: particleFloat var(--duration, 8s) linear infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+.loading-skeleton {
+  background: linear-gradient(90deg, var(--card) 25%, rgba(255,255,255,0.04) 50%, var(--card) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+.btn-ripple { position: relative; overflow: hidden; }
+.btn-ripple::after { content: ''; position: absolute; border-radius: 50%; background: rgba(255,255,255,0.3); width: 0; height: 0; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+.btn-ripple:active::after { animation: ripple 0.4s ease-out; width: 200px; height: 200px; }
+
+.counter { display: inline-block; }

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog — Victor Akor</title>
+  <meta name="description" content="Engineering insights on Go, AI, Computer Vision, Backend Development, and System Design by Victor Akor." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+  <link rel="stylesheet" href="/static/css/animations.css" />
+</head>
+<body>
+<nav class="navbar scrolled">
+  <div class="container navbar-inner">
+    <a href="/" class="navbar-logo">Victor<span>.</span></a>
+    <ul class="navbar-links">
+      <li><a href="/#services">Services</a></li>
+      <li><a href="/#work">Work</a></li>
+      <li><a href="/about">About</a></li>
+    </ul>
+    <div class="navbar-cta">
+      <a href="/contact" class="btn btn-primary btn-sm">Book Consultation</a>
+    </div>
+  </div>
+</nav>
+
+<section style="padding:140px 0 80px">
+  <div class="container">
+    <div class="text-center" data-reveal>
+      <div class="section-label">Engineering Insights</div>
+      <h1>Blog</h1>
+      <p style="max-width:500px;margin:16px auto 0">Deep dives into Go, AI, Computer Vision, Backend Engineering, System Design, and Career.</p>
+    </div>
+
+    <!-- Category Filter -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:48px 0" role="group" aria-label="Filter by category">
+      <button class="btn btn-primary btn-sm" onclick="filterPosts('')">All</button>
+      <button class="btn btn-secondary btn-sm" onclick="filterPosts('Go')">🐹 Go</button>
+      <button class="btn btn-secondary btn-sm" onclick="filterPosts('AI')">🤖 AI</button>
+      <button class="btn btn-secondary btn-sm" onclick="filterPosts('Computer Vision')">👁️ Computer Vision</button>
+      <button class="btn btn-secondary btn-sm" onclick="filterPosts('Backend')">⚙️ Backend</button>
+      <button class="btn btn-secondary btn-sm" onclick="filterPosts('System Design')">🏗️ System Design</button>
+      <button class="btn btn-secondary btn-sm" onclick="filterPosts('Career')">🚀 Career</button>
+    </div>
+
+    <div class="blog-grid" id="blogGrid">
+      <div style="grid-column:1/-1;text-align:center;padding:80px;color:var(--muted)">Loading posts...</div>
+    </div>
+
+    <div id="emptyState" style="display:none;text-align:center;padding:80px">
+      <div style="font-size:3rem;margin-bottom:16px">📝</div>
+      <h3 style="color:var(--text);margin-bottom:8px">Articles Coming Soon</h3>
+      <p>I'm working on in-depth articles about Go, AI, and system design. Check back soon!</p>
+    </div>
+  </div>
+</section>
+
+<script src="/static/js/main.js"></script>
+<script src="/static/js/ai-assistant.js"></script>
+<script>
+async function loadPosts(category) {
+  const grid = document.getElementById('blogGrid');
+  const empty = document.getElementById('emptyState');
+  const url = category ? `/api/blog?category=${encodeURIComponent(category)}` : '/api/blog';
+  try {
+    const res = await fetch(url);
+    const posts = await res.json();
+    if (!posts || !posts.length) {
+      grid.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    const emojis = { Go:'🐹', AI:'🤖', 'Computer Vision':'👁️', Backend:'⚙️', 'System Design':'🏗️', Career:'🚀' };
+    grid.innerHTML = posts.map(p => `
+      <article class="blog-card">
+        <div class="blog-card-img">${emojis[p.category] || '📝'}</div>
+        <div class="blog-card-body">
+          <div class="blog-card-category">${p.category || 'Engineering'}</div>
+          <h2 class="blog-card-title">${p.title}</h2>
+          <p class="blog-card-excerpt">${p.excerpt || ''}</p>
+        </div>
+        <div class="blog-card-footer">
+          <span class="blog-card-date">${new Date(p.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>
+          <a href="/blog/${p.slug}" class="case-card-link">Read →</a>
+        </div>
+      </article>
+    `).join('');
+  } catch {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+  }
+}
+function filterPosts(cat) {
+  document.querySelectorAll('[onclick^="filterPosts"]').forEach(b => b.className = 'btn btn-secondary btn-sm');
+  event.target.className = 'btn btn-primary btn-sm';
+  loadPosts(cat);
+}
+loadPosts('');
+</script>
+</body>
+</html>

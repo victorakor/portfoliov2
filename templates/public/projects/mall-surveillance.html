@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mall Surveillance System — Victor Akor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+  <link rel="stylesheet" href="/static/css/animations.css" />
+</head>
+<body>
+<nav class="navbar scrolled">
+  <div class="container navbar-inner">
+    <a href="/" class="navbar-logo">Victor<span>.</span></a>
+    <div class="navbar-cta">
+      <a href="/#work" class="btn btn-secondary btn-sm">← All Projects</a>
+      <a href="/contact" class="btn btn-primary btn-sm">Work With Me</a>
+    </div>
+  </div>
+</nav>
+
+<article style="padding-top:100px">
+  <!-- Hero -->
+  <div style="background:linear-gradient(135deg,rgba(37,99,235,0.08),rgba(6,182,212,0.04));border-bottom:1px solid var(--border);padding:80px 0">
+    <div class="container">
+      <div class="section-label">Case Study</div>
+      <h1 style="font-size:clamp(2rem,5vw,3.5rem);margin-bottom:16px">Mall Surveillance System</h1>
+      <p style="font-size:1.1rem;max-width:600px;margin-bottom:32px">Real-time AI-powered surveillance with face recognition, object detection, and anomaly alerts for a commercial mall environment.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <span class="badge badge-primary">Computer Vision</span>
+        <span class="badge badge-cyan">Deep Learning</span>
+        <span class="badge badge-success">Deployed</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" style="padding:80px 24px;max-width:900px">
+    <!-- Tech Stack -->
+    <div class="card" style="margin-bottom:48px">
+      <h3 style="color:var(--text);margin-bottom:16px">Technology Stack</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <span class="tech-tag">Python</span><span class="tech-tag">OpenCV</span><span class="tech-tag">TensorFlow</span>
+        <span class="tech-tag">PostgreSQL</span><span class="tech-tag">Docker</span><span class="tech-tag">REST API</span>
+      </div>
+    </div>
+
+    <!-- Problem -->
+    <section style="margin-bottom:48px" data-reveal>
+      <h2 style="color:var(--text);margin-bottom:16px">The Problem</h2>
+      <p>A commercial mall needed an intelligent surveillance system that could go beyond traditional CCTV. The existing system required constant human monitoring, missed incidents, and had no ability to identify persons of interest or detect unusual behavior patterns.</p>
+    </section>
+
+    <!-- Challenges -->
+    <section style="margin-bottom:48px" data-reveal>
+      <h2 style="color:var(--text);margin-bottom:16px">Challenges</h2>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:12px">
+        <li style="display:flex;gap:12px;align-items:flex-start"><span style="color:var(--primary)">→</span><span style="color:var(--muted)">Processing multiple camera feeds simultaneously in real-time without frame drops</span></li>
+        <li style="display:flex;gap:12px;align-items:flex-start"><span style="color:var(--primary)">→</span><span style="color:var(--muted)">Achieving high accuracy face recognition in varying lighting conditions</span></li>
+        <li style="display:flex;gap:12px;align-items:flex-start"><span style="color:var(--primary)">→</span><span style="color:var(--muted)">Minimizing false positives in anomaly detection to avoid alert fatigue</span></li>
+        <li style="display:flex;gap:12px;align-items:flex-start"><span style="color:var(--primary)">→</span><span style="color:var(--muted)">Building a scalable architecture that could handle camera expansion</span></li>
+      </ul>
+    </section>
+
+    <!-- Architecture -->
+    <section style="margin-bottom:48px" data-reveal>
+      <h2 style="color:var(--text);margin-bottom:16px">Architecture</h2>
+      <p style="margin-bottom:20px">The system uses a multi-threaded Python backend with OpenCV for video capture and preprocessing. Each camera feed runs in an isolated thread, feeding frames into a TensorFlow inference pipeline.</p>
+      <div class="card" style="font-family:var(--font-mono);font-size:0.85rem;color:var(--muted)">
+        Camera Feeds → Frame Buffer → Preprocessing → Detection Pipeline → Alert Engine → Dashboard
+      </div>
+    </section>
+
+    <!-- Implementation -->
+    <section style="margin-bottom:48px" data-reveal>
+      <h2 style="color:var(--text);margin-bottom:16px">Implementation</h2>
+      <p>Built a custom face recognition model trained on a curated dataset. Object detection uses a fine-tuned YOLO model for real-time performance. Anomaly detection uses behavioral pattern analysis with configurable thresholds.</p>
+    </section>
+
+    <!-- Results -->
+    <section style="margin-bottom:48px" data-reveal>
+      <h2 style="color:var(--text);margin-bottom:16px">Results</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px">
+        <div class="card" style="text-align:center">
+          <div style="font-size:2rem;font-weight:800;color:var(--primary)">94%</div>
+          <div style="font-size:0.85rem;color:var(--muted)">Face Recognition Accuracy</div>
+        </div>
+        <div class="card" style="text-align:center">
+          <div style="font-size:2rem;font-weight:800;color:var(--primary)">30fps</div>
+          <div style="font-size:0.85rem;color:var(--muted)">Real-time Processing</div>
+        </div>
+        <div class="card" style="text-align:center">
+          <div style="font-size:2rem;font-weight:800;color:var(--primary)">8</div>
+          <div style="font-size:0.85rem;color:var(--muted)">Simultaneous Cameras</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lessons -->
+    <section style="margin-bottom:48px" data-reveal>
+      <h2 style="color:var(--text);margin-bottom:16px">Lessons Learned</h2>
+      <p>Multi-threading in Python requires careful GIL management for CPU-bound tasks. Using separate processes for inference and a shared queue for frames significantly improved throughput. Model quantization reduced inference time by 40% with minimal accuracy loss.</p>
+    </section>
+
+    <div style="display:flex;gap:16px;flex-wrap:wrap" data-reveal>
+      <a href="/contact" class="btn btn-primary btn-lg">Build Something Similar →</a>
+      <a href="/#work" class="btn btn-secondary btn-lg">← All Projects</a>
+    </div>
+  </div>
+</article>
+
+<script src="/static/js/main.js"></script>
+<script src="/static/js/ai-assistant.js"></script>
+</body>
+</html>
