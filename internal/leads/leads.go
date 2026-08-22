@@ -1,12 +1,15 @@
 package leads
 
 import (
+	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 	"time"
 
 	"portfolio/internal/database"
+	"portfolio/internal/email"
 
 	"github.com/google/uuid"
 )
@@ -63,6 +66,27 @@ func SubmitHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to save lead", http.StatusInternalServerError)
 		return
 	}
+
+	// The lead is safely stored, so the visitor gets their confirmation whether or
+	// not the notification email succeeds. Detached from r.Context(), which is
+	// canceled as soon as the response is written.
+	go func(l Lead) {
+		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		defer cancel()
+
+		if err := email.NotifyNewLead(ctx, email.LeadNotification{
+			Name:        l.Name,
+			Email:       l.Email,
+			Phone:       l.Phone,
+			Company:     l.Company,
+			ProjectType: l.ProjectType,
+			Budget:      l.Budget,
+			Timeline:    l.Timeline,
+			Message:     l.Message,
+		}); err != nil {
+			log.Printf("[leads] notification failed for %s: %v", l.ID, err)
+		}
+	}(lead)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)

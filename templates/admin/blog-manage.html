@@ -38,24 +38,38 @@
       <div class="table-wrapper">
         <div class="table-header">
           <h2 class="table-title">Blog Manage</h2>
-          <button class="btn btn-primary btn-sm" onclick="document.getElementById('createModal').classList.add('open')">+ New</button>
+          <button class="btn btn-primary btn-sm" onclick="openPostModal()">+ New</button>
         </div>
         <table class="data-table">
-          <thead><tr><th>Title</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
-          <tbody id="blogTableBody"><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:40px">Loading...</td></tr></tbody>
+          <thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody id="blogTableBody"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:40px">Loading...</td></tr></tbody>
         </table>
       </div>
     </div>
   </main>
 </div>
-<div class="modal-overlay" id="createModal">
-  <div class="modal">
-    <h2 class="modal-title">Create New</h2>
-    <div class="form-group"><label>Title</label><input type="text" placeholder="Enter title..." /></div>
-    <div class="form-group"><label>Content</label><textarea class="editor-area" rows="6" placeholder="Write content..."></textarea></div>
+<div class="modal-overlay" id="postModal">
+  <div class="modal" style="max-height:90vh;overflow-y:auto">
+    <h2 class="modal-title" id="postModalTitle">New Post</h2>
+    <input type="hidden" id="postId" />
+    <div class="form-group"><label>Title</label><input type="text" id="postTitle" placeholder="Enter title..." /></div>
+    <div class="form-group"><label>Category</label><input type="text" id="postCategory" placeholder="e.g. Engineering" /></div>
+    <div class="form-group"><label>Excerpt</label><textarea id="postExcerpt" rows="2" placeholder="Short summary shown in listings..."></textarea></div>
+    <div class="form-group">
+      <label>Cover image</label>
+      <input type="file" id="postCoverFile" accept="image/png,image/jpeg,image/webp,image/gif" onchange="previewLocal(this,'postCoverPreview')" />
+      <input type="hidden" id="postCoverUrl" />
+      <img id="postCoverPreview" alt="" style="display:none;margin-top:12px;max-width:100%;max-height:160px;border-radius:8px" />
+    </div>
+    <div class="form-group"><label>Content</label><textarea class="editor-area" id="postContent" rows="8" placeholder="Write content..."></textarea></div>
+    <div class="form-group">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+        <input type="checkbox" id="postPublished" style="width:auto;margin:0" /> Published
+      </label>
+    </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="document.getElementById('createModal').classList.remove('open')">Cancel</button>
-      <button class="btn btn-primary">Save</button>
+      <button class="btn btn-secondary" onclick="closeModal('postModal')">Cancel</button>
+      <button class="btn btn-primary" id="postSaveBtn" onclick="savePost()">Save</button>
     </div>
   </div>
 </div>

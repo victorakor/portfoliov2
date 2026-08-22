@@ -26,7 +26,10 @@ type Post struct {
 
 func ListPublicHandler(w http.ResponseWriter, r *http.Request) {
 	category := r.URL.Query().Get("category")
-	query := `SELECT id, title, slug, excerpt, cover_image, category, published, created_at, updated_at
+	// excerpt/cover_image/category are nullable and rows.Scan errors are ignored,
+	// so COALESCE stops one NULL from blanking a whole row.
+	query := `SELECT id, title, slug, COALESCE(excerpt,''), COALESCE(cover_image,''),
+	                 COALESCE(category,''), published, created_at, updated_at
 	           FROM blog_posts WHERE published = true`
 	args := []interface{}{}
 	if category != "" {
@@ -59,7 +62,8 @@ func GetBySlugHandler(w http.ResponseWriter, r *http.Request) {
 
 	var p Post
 	err := database.DB.QueryRow(
-		`SELECT id, title, slug, excerpt, content, cover_image, category, published, created_at, updated_at
+		`SELECT id, title, slug, COALESCE(excerpt,''), COALESCE(content,''), COALESCE(cover_image,''),
+		        COALESCE(category,''), published, created_at, updated_at
 		 FROM blog_posts WHERE slug=$1 AND published=true`, slug,
 	).Scan(&p.ID, &p.Title, &p.Slug, &p.Excerpt, &p.Content, &p.CoverImage, &p.Category, &p.Published, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
@@ -72,8 +76,11 @@ func GetBySlugHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AdminListHandler(w http.ResponseWriter, r *http.Request) {
+	// content is included here (unlike the public list) because the admin edit
+	// form prefills from this payload — without it, saving would blank the body.
 	rows, err := database.DB.Query(
-		`SELECT id, title, slug, excerpt, cover_image, category, published, created_at, updated_at
+		`SELECT id, title, slug, COALESCE(excerpt,''), COALESCE(content,''), COALESCE(cover_image,''),
+		        COALESCE(category,''), published, created_at, updated_at
 		 FROM blog_posts ORDER BY created_at DESC`,
 	)
 	if err != nil {
@@ -85,7 +92,7 @@ func AdminListHandler(w http.ResponseWriter, r *http.Request) {
 	var posts []Post
 	for rows.Next() {
 		var p Post
-		rows.Scan(&p.ID, &p.Title, &p.Slug, &p.Excerpt, &p.CoverImage, &p.Category, &p.Published, &p.CreatedAt, &p.UpdatedAt)
+		rows.Scan(&p.ID, &p.Title, &p.Slug, &p.Excerpt, &p.Content, &p.CoverImage, &p.Category, &p.Published, &p.CreatedAt, &p.UpdatedAt)
 		posts = append(posts, p)
 	}
 

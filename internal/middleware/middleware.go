@@ -13,6 +13,20 @@ type contextKey string
 
 const UserIDKey contextKey = "userID"
 
+// denied ends an unauthenticated request. API callers get a 401 they can act on
+// — admin.js already redirects to the login page on 401 — while page requests
+// get a browser redirect. Without the split, a fetch() would silently follow the
+// redirect and receive login HTML with status 200, then fail on res.json().
+func denied(w http.ResponseWriter, r *http.Request) {
+	if strings.HasPrefix(r.URL.Path, "/api/") {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(`{"error":"unauthorized"}`))
+		return
+	}
+	http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
+}
+
 func Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenStr := ""
@@ -27,7 +41,7 @@ func Auth(next http.Handler) http.Handler {
 		}
 
 		if tokenStr == "" {
-			http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
+			denied(w, r)
 			return
 		}
 
@@ -36,13 +50,13 @@ func Auth(next http.Handler) http.Handler {
 			return []byte(secret), nil
 		})
 		if err != nil || !token.Valid {
-			http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
+			denied(w, r)
 			return
 		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
-			http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
+			denied(w, r)
 			return
 		}
 

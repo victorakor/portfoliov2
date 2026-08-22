@@ -71,6 +71,8 @@ JWT_SECRET=$(openssl rand -hex 48)
 
 # Fill these in later, then: docker compose up -d
 RESEND_API_KEY=
+RESEND_FROM=
+LEAD_NOTIFY_TO=
 CLOUDINARY_URL=
 GA_MEASUREMENT_ID=
 OLLAMA_API_KEY=
