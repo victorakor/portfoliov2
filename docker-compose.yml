@@ -1,0 +1,72 @@
+# Victor Akor Portfolio v3 — production stack (Oracle Cloud Always Free VM)
+# Runs the app, Postgres, and Caddy (automatic HTTPS) on a single host.
+#
+#   docker compose up -d --build
+#
+# Reads secrets from .env in this directory. See .env.production.example.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: portfolio
+      POSTGRES_DB: portfolio
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Runs *.sql in filename order, but only when pgdata is first created.
+      # This is what applies migrations/001_init.sql — nothing in the Go code does.
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U portfolio -d portfolio"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  app:
+    build: .
+    restart: unless-stopped
+    # database.Connect() calls log.Fatalf if its first ping fails, so the app
+    # must never start before Postgres is accepting connections — otherwise a
+    # host reboot can race and leave the container dead.
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 8080
+      ENV: production
+      DATABASE_URL: postgres://portfolio:${DB_PASSWORD}@postgres:5432/portfolio?sslmode=disable
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      ALLOWED_ORIGIN: https://${DOMAIN:?set DOMAIN in .env}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      CLOUDINARY_URL: ${CLOUDINARY_URL:-}
+      GA_MEASUREMENT_ID: ${GA_MEASUREMENT_ID:-}
+      OLLAMA_API_KEY: ${OLLAMA_API_KEY:-}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-}
+    # Not published to the host — only Caddy reaches it, over the compose network.
+    expose:
+      - "8080"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Certificates live here. Must persist, or every restart re-issues and
+      # you will hit Let's Encrypt rate limits.
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
