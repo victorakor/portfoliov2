@@ -12,16 +12,17 @@ import (
 	"time"
 )
 
-const grokAPIURL = "https://api.groq.com/openai/v1/chat/completions"
+// Ollama Cloud's OpenAI-compatible chat endpoint.
+const ollamaAPIURL = "https://ollama.com/v1/chat/completions"
 
-// grokModel is the current general-purpose Grok model. The older "fast"
-// family (grok-4-1-fast, grok-4-fast) was retired by xAI on May 15, 2026 and
-// now redirects to grok-4.20 — xAI's current guidance is to default to
-// grok-4.3 for general use. Override with the GROK_MODEL env var if needed.
-const grokModel = "llama-3.1-8b-instant"
+// defaultModel is the general-purpose Ollama Cloud model. Measured at ~1.7s for
+// a 300-token reply, comfortably inside httpClient's 20s timeout. The larger
+// gpt-oss:120b answers better than gpt-oss:20b at no meaningful latency cost.
+// Override with the OLLAMA_MODEL env var.
+const defaultModel = "gpt-oss:120b"
 
 const systemPrompt = `You are the AI assistant embedded on Victor Akor's portfolio website.
-Victor is a Senior Software Engineer & AI Specialist with 5+ years of experience.
+Victor is a  Software Engineer & AI Specialist with 5+ years of experience.
 
 Skills: Go, Python, JavaScript, PostgreSQL, Docker, OpenCV, TensorFlow, REST APIs, Linux.
 Services: AI Engineering, Backend Engineering, Full Stack Development, Technical Consulting.
@@ -49,14 +50,14 @@ type chatMessage struct {
 	Content string `json:"content"`
 }
 
-type grokRequest struct {
+type upstreamRequest struct {
 	Model       string        `json:"model"`
 	Messages    []chatMessage `json:"messages"`
 	Temperature float64       `json:"temperature"`
 	MaxTokens   int           `json:"max_tokens"`
 }
 
-type grokResponse struct {
+type upstreamResponse struct {
 	Choices []struct {
 		Message chatMessage `json:"message"`
 	} `json:"choices"`
@@ -84,7 +85,7 @@ func truncate(s string, n int) string {
 	return s[:n] + "...(truncated)"
 }
 
-// ChatHandler proxies portfolio-assistant chat turns to the Grok API so the
+// ChatHandler proxies portfolio-assistant chat turns to Ollama Cloud so the
 // API key never reaches the browser.
 func ChatHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -108,15 +109,15 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	apiKey := os.Getenv("XAI_API_KEY")
+	apiKey := os.Getenv("OLLAMA_API_KEY")
 	if apiKey == "" {
 		http.Error(w, "Assistant is not configured", http.StatusServiceUnavailable)
 		return
 	}
 
-	model := os.Getenv("GROK_MODEL")
+	model := os.Getenv("OLLAMA_MODEL")
 	if model == "" {
-		model = grokModel
+		model = defaultModel
 	}
 
 	messages := make([]chatMessage, 0, len(req.History)+2)
@@ -135,7 +136,7 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	messages = append(messages, chatMessage{Role: "user", Content: req.Message})
 
-	reqBody, err := json.Marshal(grokRequest{
+	reqBody, err := json.Marshal(upstreamRequest{
 		Model:       model,
 		Messages:    messages,
 		Temperature: 0.6,
@@ -146,7 +147,7 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpReq, err := http.NewRequestWithContext(r.Context(), http.MethodPost, grokAPIURL, bytes.NewReader(reqBody))
+	httpReq, err := http.NewRequestWithContext(r.Context(), http.MethodPost, ollamaAPIURL, bytes.NewReader(reqBody))
 	if err != nil {
 		http.Error(w, "Failed to reach assistant", http.StatusInternalServerError)
 		return
@@ -167,24 +168,24 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("[assistant] grok status=%d body=%s", resp.StatusCode, truncate(string(body), 1000))
+	log.Printf("[assistant] ollama status=%d body=%s", resp.StatusCode, truncate(string(body), 1000))
 
 	if resp.StatusCode != http.StatusOK {
 		http.Error(w, fmt.Sprintf("Assistant error: upstream returned status %d", resp.StatusCode), http.StatusBadGateway)
 		return
 	}
 
-	var grokResp grokResponse
-	if err := json.Unmarshal(body, &grokResp); err != nil {
+	var upstreamResp upstreamResponse
+	if err := json.Unmarshal(body, &upstreamResp); err != nil {
 		http.Error(w, "Failed to parse assistant response", http.StatusBadGateway)
 		return
 	}
 
-	if len(grokResp.Choices) == 0 {
+	if len(upstreamResp.Choices) == 0 {
 		http.Error(w, "Assistant returned no response", http.StatusBadGateway)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(ChatResponse{Reply: strings.TrimSpace(grokResp.Choices[0].Message.Content)})
+	json.NewEncoder(w).Encode(ChatResponse{Reply: strings.TrimSpace(upstreamResp.Choices[0].Message.Content)})
 }
