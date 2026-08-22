@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
+	"strings"
 
 	"portfolio/internal/analytics"
 	"portfolio/internal/assistant"
@@ -14,6 +16,7 @@ import (
 	"portfolio/internal/leads"
 	"portfolio/internal/middleware"
 	"portfolio/internal/projects"
+	"portfolio/internal/storage"
 
 	"github.com/joho/godotenv"
 )
@@ -72,10 +75,17 @@ func main() {
 	adminMux.HandleFunc("/api/admin/leads/", leads.UpdateStatusHandler)
 	adminMux.HandleFunc("/api/admin/blog", blog.AdminListHandler)
 	adminMux.HandleFunc("/api/admin/blog/create", blog.CreateHandler)
-	adminMux.HandleFunc("/api/admin/blog/", blog.UpdateHandler)
+	adminMux.HandleFunc("/api/admin/blog/", byMethod(map[string]http.HandlerFunc{
+		http.MethodPut:    blog.UpdateHandler,
+		http.MethodDelete: blog.DeleteHandler,
+	}))
 	adminMux.HandleFunc("/api/admin/projects", projects.ListHandler)
 	adminMux.HandleFunc("/api/admin/projects/create", projects.CreateHandler)
-	adminMux.HandleFunc("/api/admin/projects/", projects.UpdateHandler)
+	adminMux.HandleFunc("/api/admin/projects/", byMethod(map[string]http.HandlerFunc{
+		http.MethodPut:    projects.UpdateHandler,
+		http.MethodDelete: projects.DeleteHandler,
+	}))
+	adminMux.HandleFunc("/api/admin/upload", storage.UploadHandler)
 	adminMux.HandleFunc("/api/admin/analytics/pages", analytics.PageStatsHandler)
 
 	mux.Handle("/admin", middleware.Auth(adminMux))
@@ -98,5 +108,25 @@ func main() {
 func serveTemplate(path string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, path)
+	}
+}
+
+// byMethod dispatches one path to a different handler per HTTP method. Needed
+// because ServeMux matches on path only, so /api/admin/blog/ has to serve both
+// PUT (update) and DELETE (delete).
+func byMethod(handlers map[string]http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		h, ok := handlers[r.Method]
+		if !ok {
+			allowed := make([]string, 0, len(handlers))
+			for m := range handlers {
+				allowed = append(allowed, m)
+			}
+			sort.Strings(allowed)
+			w.Header().Set("Allow", strings.Join(allowed, ", "))
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		h(w, r)
 	}
 }
